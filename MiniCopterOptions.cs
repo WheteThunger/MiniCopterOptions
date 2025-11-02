@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Mini-Copter Options", "Pho3niX90", "2.5.3")]
+    [Info("Mini-Copter Options", "Pho3niX90", "2.5.4")]
     [Description("Provide a number of additional options for Mini-Copters, including storage and seats.")]
     internal class MiniCopterOptions : CovalencePlugin
     {
@@ -521,11 +521,8 @@ namespace Oxide.Plugins
             var player = BasePlayer.FindByID(copter.OwnerID);
             if (player != null)
             {
-                turret.authorizedPlayers.Add(new ProtoBuf.PlayerNameID
-                {
-                    userid = player.userID,
-                    username = player.displayName,
-                });
+                turret.authorizedPlayers.Add(player.userID);
+                turret.UpdateMaxAuthCapacity();
                 turret.SendNetworkUpdate();
             }
 
