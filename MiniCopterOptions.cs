@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("Mini-Copter Options", "Pho3niX90", "2.5.5")]
+    [Info("Mini-Copter Options", "Pho3niX90", "2.5.6")]
     [Description("Provide a number of additional options for Mini-Copters, including storage and seats.")]
     internal class MiniCopterOptions : CovalencePlugin
     {
@@ -211,14 +211,16 @@ namespace Oxide.Plugins
                 return;
             }
 
+            using var flagsScope = turret.StartSetFlags(BaseEntity.FlagsUpdateMode.SendNetworkUpdate_Flags);
+
             if (electricSwitch.IsOn())
             {
-                turret.SetFlag(IOEntity.Flag_HasPower, true);
+                flagsScope.Set(IOEntity.Flag_HasPower, true);
                 turret.InitiateStartup();
             }
             else
             {
-                turret.SetFlag(IOEntity.Flag_HasPower, false);
+                flagsScope.Set(IOEntity.Flag_HasPower, false);
                 turret.InitiateShutdown();
             }
         }
@@ -273,7 +275,8 @@ namespace Oxide.Plugins
                 if (light == null)
                     continue;
 
-                light.SetFlag(IOEntity.Flag_HasPower, !light.IsPowered());
+                using var flagsScope = light.StartSetFlags(BaseEntity.FlagsUpdateMode.SendNetworkUpdate_Flags);
+                flagsScope.Set(IOEntity.Flag_HasPower, !light.IsPowered());
 
                 // Prevent other lights from toggling.
                 return False;
@@ -406,7 +409,8 @@ namespace Oxide.Plugins
                 var tailLight = mini.GetComponentInChildren<FlasherLight>();
                 if (tailLight != null)
                 {
-                    tailLight.SetFlag(IOEntity.Flag_HasPower, isNight);
+                    using var flagsScope = tailLight.StartSetFlags(BaseEntity.FlagsUpdateMode.SendNetworkUpdate_Flags);
+                    flagsScope.Set(IOEntity.Flag_HasPower, isNight);
                 }
             }
 
@@ -506,7 +510,8 @@ namespace Oxide.Plugins
         {
             tailLight.pickup.enabled = false;
             DestroyGroundComp(tailLight);
-            tailLight.SetFlag(IOEntity.Flag_HasPower, IsNight());
+            using var flagsScope = tailLight.StartSetFlags(BaseEntity.FlagsUpdateMode.SendNetworkUpdate_Flags);
+            flagsScope.Set(IOEntity.Flag_HasPower, IsNight());
         }
 
         private void AddTailLight(Minicopter copter)
@@ -541,8 +546,10 @@ namespace Oxide.Plugins
             searchLight.Spawn();
 
             SetupInvincibility(searchLight);
-            searchLight.SetFlag(BaseEntity.Flags.Reserved5, true);
-            searchLight.SetFlag(BaseEntity.Flags.Busy, true);
+
+            using var flagsScope = searchLight.StartSetFlags(BaseEntity.FlagsUpdateMode.SendNetworkUpdate_Flags);
+            flagsScope.Set(BaseEntity.Flags.Reserved5, true);
+            flagsScope.Set(BaseEntity.Flags.Busy, true);
         }
 
         private void SetupAutoTurret(AutoTurret turret)
